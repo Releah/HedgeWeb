@@ -36,6 +36,7 @@ function renderVpnStatus() {
   qs('#vpn-identity').textContent = vpnStatus.identity; qs('#vpn-endpoint').textContent = vpnStatus.endpoint || 'Not configured'; qs('#vpn-address').textContent = vpnStatus.address || '—'; qs('#vpn-access-scope').textContent = vpnStatus.accessScope;
   qs('#vpn-duration').textContent = vpnStatus.connectedAt ? formatDuration(Date.now() - Date.parse(vpnStatus.connectedAt)) : '00:00:00';
   qs('#vpn-lease').textContent = vpnStatus.expiresAt ? formatDuration(Date.parse(vpnStatus.expiresAt) - Date.now()) : '—'; qs('#vpn-received').textContent = formatBytes(vpnStatus.bytesReceived); qs('#vpn-sent').textContent = formatBytes(vpnStatus.bytesSent);
+  qs('#vpn-error-row').hidden = !vpnStatus.error; qs('#vpn-error-detail').textContent = vpnStatus.error || '—';
   const action = qs<HTMLButtonElement>('#vpn-action'); action.disabled = busy; action.classList.toggle('disconnect', connected);
   action.textContent = !vpnStatus.configured ? 'CONFIGURE VPN' : connected ? 'DISCONNECT' : busy ? 'AUTHENTICATING…' : 'REQUEST INTERNAL ACCESS';
 }

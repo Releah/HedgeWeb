@@ -47,14 +47,14 @@ async function connect(input) {
   const packedPassword = otp ? `SCRV1:${Buffer.from(password).toString('base64')}:${Buffer.from(otp).toString('base64')}` : password;
   await writeFile('/run/vpn/client.ovpn', profile, { mode: 0o600 }); if (!certificateOnly) await writeFile('/run/vpn/auth', `${username}\n${packedPassword}\n`, { mode: 0o600 });
   state = 'connecting'; errorMessage = null; identity = String(input.identity || username); endpoint = String(input.endpoint || 'OpenVPN'); accessScope = String(input.accessScope || 'Elevated routes'); expiresAt = new Date(Date.now() + Math.min(Math.max(Number(input.leaseMinutes) || 60, 5), 480) * 60_000).toISOString(); logTail = [];
-  const args = ['--config', '/run/vpn/client.ovpn', '--dev', 'tun0', '--verb', '3']; if (!certificateOnly) args.push('--auth-user-pass', '/run/vpn/auth');
+  const args = ['--config', '/run/vpn/client.ovpn', '--dev', 'tun0', '--tmp-dir', '/run/vpn', '--verb', '3']; if (!certificateOnly) args.push('--auth-user-pass', '/run/vpn/auth');
   const child = spawn('openvpn', args, { stdio: ['ignore', 'pipe', 'pipe'] }); processHandle = child;
   const consume = data => {
     for (const line of data.toString().split(/\r?\n/).filter(Boolean)) {
       const safe = line.replace(/(password|token|auth)[^ ]*/ig, '[redacted]'); logTail.push(safe.slice(-240)); if (logTail.length > 8) logTail.shift();
       if (/Initialization Sequence Completed/.test(line)) { state = 'connected'; connectedAt = new Date().toISOString(); }
       const ip = line.match(/net_addr_v4_add: ([0-9.]+)/)?.[1] || line.match(/ifconfig ([0-9.]+)/)?.[1]; if (ip) address = ip;
-      if (/AUTH_FAILED|Options error|Exiting due to fatal error|TLS Error/.test(line)) { state = 'error'; errorMessage = safe.slice(-180); }
+      if (/AUTH_FAILED|Options error|Exiting due to fatal error|TLS Error/.test(line)) { state = 'error'; errorMessage = logTail.slice(-3).join(' · ').slice(-420); }
     }
   };
   child.stdout.on('data', consume); child.stderr.on('data', consume);

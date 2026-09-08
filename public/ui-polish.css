@@ -1,0 +1,177 @@
+:root {
+  --bg: #02070d;
+  --panel: #07131b;
+  --line: #245154;
+  --text: #d9fff4;
+  --muted: #79a59e;
+  --accent: #52ffd1;
+  --accent2: #1de0b0;
+  --magenta: #ff3ea5;
+  --warning: #e8ff48;
+  --danger: #ff5796;
+  --scroll-track: #040910;
+  --scroll-thumb: #8736bb;
+  --scroll-thumb-hover: #b44ee8;
+  --scroll-thumb-active: #d879ff;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+}
+
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: var(--scroll-track); border-left: 1px solid #762da326; }
+*::-webkit-scrollbar-corner { background: var(--scroll-track); }
+*::-webkit-scrollbar-thumb { min-height: 32px; border: 2px solid var(--scroll-track); border-radius: 0; background: var(--scroll-thumb); box-shadow: inset 0 0 0 1px #dc8aff2e; }
+*::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+*::-webkit-scrollbar-thumb:active { background: var(--scroll-thumb-active); }
+
+body {
+  background: #02070d url('/cyberpunk-wallpaper-v3-4k.png') center / cover fixed no-repeat;
+}
+
+#login-view::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(110deg, #02070ddd, #02070d99), repeating-linear-gradient(0deg, transparent 0 3px, #52ffd105 4px);
+  pointer-events: none;
+}
+
+.login-card {
+  position: relative;
+  width: min(440px, 100%);
+  padding: 38px;
+  border: 1px solid #52ffd166;
+  border-radius: 2px;
+  background: #061118f2;
+  box-shadow: 9px 10px 0 #000b, 10px 11px 0 #ff3ea52b, inset 0 1px #52ffd126;
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+.login-card::before { content: "AUTH_GATE // LOCAL+PROXY"; position: absolute; top: 13px; right: 18px; color: #ff3ea588; font-size: 7px; letter-spacing: .14em; }
+.login-card .brand h1 { text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+.login-card .mark, .large-mark { border-radius: 2px; color: var(--warning); border-color: #e8ff4866; background: #e8ff480c; box-shadow: inset 0 0 14px #e8ff4812, 3px 3px 0 #ff3ea525; }
+.browser-icon { background: linear-gradient(145deg, #142f4b, #080e20); color: #70e5ff; text-shadow: 0 0 9px #27cfff; }
+.login-card label { text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
+.login-card .hint { border-left: 2px solid var(--magenta); padding-left: 10px; }
+
+input, select {
+  border: 1px solid #2b6062;
+  border-radius: 1px;
+  background: #030b10;
+  color: var(--text);
+}
+input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px #52ffd118, 0 0 16px #52ffd10d; }
+.primary, .ghost, .danger-button { border-radius: 1px; text-transform: uppercase; letter-spacing: .07em; }
+.ghost { border-color: #52ffd144; }
+.danger-button { border-color: #ff3ea566; color: #ff82bd; background: #ff3ea50c; }
+.error { color: #ff5796; text-shadow: 0 0 8px #ff3ea555; }
+
+.launcher-heading strong, .user-menu strong, dialog h2 { text-transform: uppercase; letter-spacing: .07em; }
+.launcher-heading { border-bottom: 1px dashed #52ffd12f; }
+.launcher .app-icon, .user-menu, dialog { border-radius: 2px; }
+.app-tile:focus-visible, .desktop-icons button:focus-visible, .window-actions button:focus-visible { outline: 1px solid var(--warning); outline-offset: 2px; }
+dialog::backdrop { background: #010407d9; backdrop-filter: blur(3px); }
+dialog { border-color: #52ffd166; background: #061118fa; box-shadow: 9px 9px 0 #000b, 10px 10px 0 #ff3ea52b; }
+
+.desktop-icons { z-index: 3; inset: 0; top: 0; left: 0; display: block; pointer-events: none; }
+.desktop-icons button { position: absolute; width: 94px; touch-action: none; user-select: none; pointer-events: auto; transition: background .12s, box-shadow .12s, transform .12s; }
+.desktop-icons button:hover, .desktop-icons button:focus-visible { background: linear-gradient(135deg, #52ffd118, #ff3ea50b); box-shadow: inset 0 0 0 1px #52ffd142; }
+.desktop-icons button.dragging { cursor: grabbing; transform: scale(1.03); background: #52ffd118; box-shadow: 0 0 20px #52ffd126, inset 0 0 0 1px var(--accent); }
+.window-layer { pointer-events: none; }
+.app-window { pointer-events: auto; }
+.app-window {
+  border: 1px solid #52ffd182;
+  border-top-color: #7affdf;
+  background: #061018f7;
+  clip-path: polygon(10px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 13px 100%, 0 calc(100% - 13px), 0 10px);
+  box-shadow: 0 0 0 1px #02070d, 0 0 22px #52ffd118, 8px 9px 0 #000c, 9px 10px 0 #ff3ea52f;
+}
+.app-window::before {
+  inset: 0;
+  border: 0;
+  background: linear-gradient(90deg, #e8ff48 0 44px, transparent 44px calc(100% - 86px), #ff3ea5 calc(100% - 86px) 100%) top / 100% 2px no-repeat,
+    linear-gradient(#52ffd1, transparent 72px) left / 2px 100% no-repeat,
+    linear-gradient(transparent calc(100% - 58px), #ff3ea5) right / 2px 100% no-repeat;
+  clip-path: none;
+}
+.app-window:focus-within {
+  border-color: #72ffe0;
+  box-shadow: 0 0 0 1px #02070d, 0 0 28px #52ffd126, 8px 9px 0 #000c, 9px 10px 0 #ff3ea545;
+}
+.window-titlebar {
+  background: linear-gradient(90deg, #0a2025, #06121a 58%, #180c19);
+  border-bottom: 1px solid #52ffd14a;
+  box-shadow: inset 0 -1px #ff3ea50d;
+}
+.window-titlebar strong { color: #cffff2; text-shadow: 0 0 10px #52ffd126; }
+
+.window-titlebar > div:first-child { order: 1; min-width: 0; }
+.window-titlebar::after { order: 2; margin-left: auto; margin-right: 8px; }
+.window-actions { order: 3; margin-left: 0; flex: 0 0 auto; }
+.window-actions button { color: #a7cbc5; }
+.window-actions button[data-minimize]:hover { color: var(--warning); }
+.window-actions button[data-maximize]:hover { color: var(--accent); }
+.window-actions button[data-window-close]:hover { color: #07030a; background: var(--magenta); }
+
+.app-window.terminal-window { zoom: 1 !important; }
+.terminal-host { overflow: hidden; contain: none !important; isolation: auto !important; background: #02070d !important; box-shadow: inset 0 0 28px #14d9b00b; }
+.terminal-host .xterm { overflow: hidden; position: relative; z-index: auto !important; }
+.terminal-host .xterm-screen { cursor: text !important; }
+.terminal-host .xterm-helper-textarea { pointer-events: auto !important; caret-color: #e8ff48 !important; }
+.terminal-host .xterm-screen { filter: none; }
+.terminal-host::before, .terminal-host::after { display: none !important; }
+.terminal-host .xterm-selection > div { background-color: #963dcc !important; opacity: .9 !important; }
+@keyframes hedge-cursor-blink { 0%, 46% { opacity: 1; } 47%, 100% { opacity: 0; } }
+.terminal-host .xterm-rows .xterm-cursor.xterm-cursor-bar { box-shadow: 2px 0 0 #e8ff48 inset !important; animation: hedge-cursor-blink 1.05s steps(1, end) infinite !important; }
+.terminal-host .xterm-viewport { overflow-y: scroll !important; scrollbar-gutter: stable; scrollbar-color: var(--scroll-thumb) var(--scroll-track) !important; }
+.terminal-host .xterm-viewport::-webkit-scrollbar-track { background: var(--scroll-track) !important; }
+.terminal-host .xterm-viewport::-webkit-scrollbar-thumb { border: 2px solid var(--scroll-track) !important; background: var(--scroll-thumb) !important; }
+.terminal-host .xterm-viewport::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover) !important; }
+.terminal-host .xterm-viewport::-webkit-scrollbar-thumb:active { background: var(--scroll-thumb-active) !important; }
+
+.browser-app { height: 100%; min-height: 0; display: grid; grid-template-rows: 48px 24px 1fr; background: #02070d; }
+.browser-toolbar { margin: 0; padding: 7px 9px; display: grid; grid-template-columns: 32px 32px 32px minmax(100px, 1fr) 44px 34px; gap: 6px; align-items: center; border-bottom: 1px solid #52ffd12f; background: linear-gradient(90deg, #071b21, #07101a 70%, #170b18); }
+.browser-toolbar button { height: 32px; padding: 0; border: 1px solid #52ffd13b; border-radius: 1px; background: #52ffd108; color: var(--accent); font: inherit; }
+.browser-toolbar button:hover:not(:disabled) { border-color: var(--accent); color: var(--warning); box-shadow: inset 0 0 12px #52ffd115; }
+.browser-toolbar button:disabled { opacity: .28; cursor: default; }
+.browser-toolbar .browser-address { height: 32px; padding: 5px 10px; font-size: 12px; }
+.browser-toolbar .browser-go { color: #04110e; background: var(--accent); font-size: 10px; font-weight: 800; }
+.browser-notice { padding: 5px 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #ff77ba; border-bottom: 1px solid #ff3ea520; background: #ff3ea508; font-size: 8px; letter-spacing: .08em; }
+.browser-frame { width: 100%; height: 100%; min-height: 0; border: 0; background: #fff; }
+
+/* VPN access monitor */
+.system-tray { margin-left: auto; height: 100%; display: flex; align-items: center; }
+.vpn-monitor-button { height: 34px; min-width: 188px; display: flex; align-items: center; gap: 9px; padding: 4px 10px; border: 1px solid #963dcc55; border-radius: 2px; background: linear-gradient(110deg, #07151d, #160b1d); color: #c9dedc; text-align: left; font-family: inherit; }
+.vpn-monitor-button:hover, .vpn-monitor-button[aria-expanded="true"] { border-color: #dd45ff; box-shadow: 0 0 16px #963dcc30, inset 0 0 12px #963dcc12; }
+.vpn-monitor-button > span:last-child { display: grid; line-height: 1.05; }
+.vpn-monitor-button strong { color: #ff77ba; font-size: 9px; letter-spacing: .1em; }
+.vpn-monitor-button small { max-width: 130px; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #627c82; font-size: 7px; letter-spacing: .08em; }
+.vpn-signal { width: 23px; height: 19px; display: flex; align-items: flex-end; gap: 2px; }
+.vpn-signal i { width: 5px; height: 5px; border: 1px solid #ff3e8a; background: #ff3e8a22; box-shadow: 0 0 5px #ff3e8a55; }
+.vpn-signal i:nth-child(2) { height: 10px; opacity: .45; }.vpn-signal i:nth-child(3) { height: 16px; opacity: .2; }
+.vpn-monitor-button.connected strong { color: #52ffd1; }.vpn-monitor-button.connected .vpn-signal i { border-color: #52ffd1; background: #52ffd1; box-shadow: 0 0 8px #52ffd1; opacity: 1; }
+.vpn-monitor-button.busy .vpn-signal i { animation: vpn-pulse .8s steps(2) infinite alternate; }
+@keyframes vpn-pulse { to { opacity: 1; box-shadow: 0 0 10px #e8ff48; } }
+.vpn-monitor { position: absolute; z-index: 1300; right: 10px; bottom: 51px; width: min(370px, calc(100vw - 20px)); padding: 0; overflow: hidden; border: 1px solid #963dcc88; border-radius: 3px; background: linear-gradient(155deg, #06151cf7, #080b14fa 68%, #19091afa); color: #c9dedc; box-shadow: 0 0 0 1px #52ffd11e, 0 18px 70px #000d, 0 0 28px #963dcc26; backdrop-filter: blur(18px); }
+.vpn-monitor::after { content: ""; position: absolute; right: 19px; bottom: -7px; width: 12px; height: 12px; transform: rotate(45deg); border-right: 1px solid #963dcc88; border-bottom: 1px solid #963dcc88; background: #19091a; }
+.vpn-monitor header { height: 57px; padding: 9px 12px; border-bottom: 1px solid #52ffd12c; background: #061015cc; }
+.vpn-monitor header > div, .vpn-monitor header > div > span:last-child { display: flex; align-items: center; gap: 9px; }.vpn-monitor header > div > span:last-child { display: grid; gap: 2px; }
+.vpn-monitor header strong { color: #62f5d2; font-size: 11px; letter-spacing: .12em; }.vpn-monitor header small { color: #607b82; font-size: 7px; letter-spacing: .12em; }
+.vpn-monitor-icon { display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid #52ffd15c; color: #e8ff48; font-size: 21px; box-shadow: inset 0 0 12px #52ffd117; }
+.vpn-state-badge { margin-left: auto; padding: 5px 7px; border: 1px solid #ff3e8a55; color: #ff77ba; font-size: 7px; letter-spacing: .12em; }.vpn-state-badge.state-connected { border-color: #52ffd166; color: #52ffd1; }
+.vpn-monitor-graph { height: 50px; padding: 8px 14px 5px; display: flex; align-items: end; gap: 5px; border-bottom: 1px solid #963dcc1d; background: repeating-linear-gradient(0deg, transparent 0 9px, #52ffd10d 10px); }
+.vpn-monitor-graph span { flex: 1; height: 8%; border-top: 1px solid #963dcc; background: linear-gradient(#963dcc45, transparent); }.vpn-monitor-graph span:nth-child(3n) { height: 13%; }.vpn-monitor-graph span:nth-child(4n) { height: 5%; }
+.vpn-monitor dl { margin: 0; padding: 8px 14px; }.vpn-monitor dl div { min-height: 30px; display: grid; grid-template-columns: 118px 1fr; align-items: center; border-bottom: 1px solid #52ffd10e; }
+.vpn-monitor dt { color: #658086; font-size: 8px; letter-spacing: .08em; text-transform: uppercase; }.vpn-monitor dd { margin: 0; overflow-wrap: anywhere; color: #c9dedc; font-size: 10px; text-align: right; }
+.vpn-transfer { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 2px 14px 11px; border: 1px solid #963dcc32; background: #963dcc32; }.vpn-transfer span { display: grid; gap: 3px; padding: 9px; background: #070d15; }.vpn-transfer small { color: #6d858a; font-size: 7px; }.vpn-transfer strong { color: #70e5ff; font-size: 12px; }
+.vpn-monitor-actions { display: grid; grid-template-columns: 88px 1fr; gap: 6px; margin: 0 14px; }.vpn-action,.vpn-settings-link { padding: 9px 6px; border: 1px solid #963dcc55; border-radius: 1px; background: #963dcc12; color: #df8aff; font: 700 8px/1 inherit; letter-spacing: .08em; }.vpn-action:hover,.vpn-settings-link:hover { border-color: #dd45ff; box-shadow: inset 0 0 12px #963dcc24; }.vpn-action.disconnect { border-color: #ff3e8a66; color: #ff77ba; }.vpn-action:disabled { color: #664d70; opacity: .7; }.vpn-monitor > p { margin: 9px 14px 13px; color: #52696f; font-size: 8px; line-height: 1.45; }
+.settings-copy { max-width: 620px; color: #789097; font-size: 11px; line-height: 1.5; }.vpn-config-form { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }.vpn-config-form label:nth-of-type(3),.vpn-config-form label:nth-of-type(4),.vpn-config-form .vpn-config-note,.vpn-config-form .error,.vpn-config-form .actions { grid-column: 1 / -1; }.vpn-config-form textarea { width: 100%; resize: vertical; padding: 10px; border: 1px solid #29404f; border-radius: 2px; outline: none; background: #02070d; color: #70e5ff; font: 10px/1.45 "Cascadia Mono",Consolas,monospace; }.vpn-config-form textarea:focus { border-color: #963dcc; box-shadow: 0 0 0 2px #963dcc24; }.vpn-config-note { margin: 0; color: #657d83; font-size: 9px; }.settings-app article[data-settings-panel="vpn"] { overflow: auto; }.settings-app article[hidden] { display: none; }
+@media(max-width:700px){.vpn-monitor-button{min-width:42px}.vpn-monitor-button>span:last-child{display:none}}
+
+@media (max-width: 700px) {
+  .login-card { padding: 30px 24px; }
+  .desktop-icons { display: none; }
+}

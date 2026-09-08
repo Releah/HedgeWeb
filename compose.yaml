@@ -1,0 +1,62 @@
+services:
+  vpn-agent:
+    build: ./vpn-agent
+    restart: unless-stopped
+    networks:
+      proxy:
+        aliases:
+          - hedgeweb
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    pids_limit: 128
+    mem_limit: 256m
+    tmpfs:
+      - /run/vpn:size=2m,nosuid,nodev,noexec,mode=0700
+  hedgeweb:
+    build: .
+    restart: unless-stopped
+    network_mode: "service:vpn-agent"
+    depends_on:
+      - vpn-agent
+    environment:
+      PORT: 8080
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN}
+      AUTH_MODE: ${AUTH_MODE:-both}
+      COOKIE_SECURE: "true"
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-12}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS}
+      AUTHENTIK_ADMIN_GROUP: ${AUTHENTIK_ADMIN_GROUP:-HedgeWeb Admins}
+      VPN_CONFIG_KEY_FILE: /run/secrets/vpn_config_key
+    secrets:
+      - vpn_config_key
+    volumes:
+      - hedgeweb-data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    pids_limit: 128
+    mem_limit: 512m
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid,nodev
+
+volumes:
+  hedgeweb-data:
+
+secrets:
+  vpn_config_key:
+    file: ./secrets/vpn_config_key
+
+networks:
+  proxy:
+    external: true

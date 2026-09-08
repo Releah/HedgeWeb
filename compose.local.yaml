@@ -1,0 +1,41 @@
+services:
+  vpn-agent:
+    build: ./vpn-agent
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    cap_add:
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    pids_limit: 128
+    mem_limit: 256m
+    tmpfs:
+      - /run/vpn:size=2m,nosuid,nodev,noexec,mode=0700
+  hedgeweb:
+    build: .
+    restart: unless-stopped
+    network_mode: "service:vpn-agent"
+    depends_on:
+      - vpn-agent
+    env_file:
+      - .env.docker
+    volumes:
+      - hedgeweb-data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    pids_limit: 128
+    mem_limit: 512m
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid,nodev
+
+volumes:
+  hedgeweb-data:

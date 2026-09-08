@@ -1,0 +1,16 @@
+node_modules/
+.pnpm-store/
+dist/
+data/
+.diagnostic-data/
+secrets/
+.env
+.env.docker
+*.ovpn
+*.key
+*.pem
+*.p12
+*.pfx
+public/app.js
+public/xterm.css
+*.log

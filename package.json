@@ -1,0 +1,30 @@
+{
+  "name": "hedgeweb",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "esbuild ./src/server.ts --bundle --platform=node --format=esm --packages=external --outfile=./dist/server.js && esbuild ./src/client.ts --bundle --platform=browser --format=esm --outfile=./public/app.js && node ./scripts/copy-xterm-css.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "asn1": "^0.2.6",
+    "bcrypt-pbkdf": "^1.0.2",
+    "ssh2": "^1.16.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/ssh2": "^1.15.5",
+    "@types/ws": "^8.18.1",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

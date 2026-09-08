@@ -1,6 +1,6 @@
 # HedgeWeb
 
-HedgeWeb is a small, self-hosted infrastructure workspace designed for deployment behind Traefik and Authentik. It provides a desktop-style web interface, an SSH connection manager, browser preview, application scaling, and an optional OpenVPN access tunnel with TOTP challenge-response.
+HedgeWeb is a small, self-hosted infrastructure workspace designed for deployment behind Traefik and Authentik. It provides a desktop-style web interface, SSH and RDP connection managers, browser preview, application scaling, and an optional OpenVPN access tunnel with TOTP challenge-response.
 
 ## Current status
 
@@ -81,6 +81,24 @@ Set `PUBLIC_ORIGIN` to the exact external HTTPS origin without a trailing slash.
 The VPN settings page accepts inline OpenVPN client profiles. Embed CA, client certificate, private key, and TLS key material inside the profile rather than referencing host files. `auth-user-pass` is supplied securely by the VPN agent and may be omitted.
 
 The client supports password-only authentication and the OpenVPN `SCRV1` static challenge format used for password plus TOTP. A YubiKey can hold the TOTP secret through Yubico Authenticator. Direct USB or PKCS#11 forwarding into the container is intentionally unsupported.
+
+### OpenVPN Access Server authentication
+
+For password plus YubiKey/TOTP authentication:
+
+1. Configure Access Server to authenticate users with its local directory, LDAP, RADIUS, or PAM. Built-in TOTP is not available for SAML users.
+2. Enable TOTP MFA globally or for the group allowed to use HedgeWeb.
+3. Sign in to the Access Server Client Web UI as the VPN user and complete MFA enrollment.
+4. Store the generated TOTP account on a YubiKey with Yubico Authenticator if hardware-backed storage is desired.
+5. Download a user-locked or server-locked OpenVPN connection profile after MFA has been enabled. Do not use an auto-login profile.
+6. Import that profile through HedgeWeb's VPN settings page.
+7. Use **Request internal access** and supply the VPN username, password, and current six-to-eight digit authenticator code.
+
+The endpoint must include or accept OpenVPN static challenge-response (`SCRV1`). If a custom Access Server authentication extension is used, configure its client challenge as a static TOTP challenge. Dynamic web/SAML authentication is not yet supported by the HedgeWeb VPN agent.
+
+## RDP profiles
+
+RDP destination metadata is stored in the persistent application data volume and is never included in the source repository. RDP passwords are not stored. The current RDP Manager creates and displays connection profiles. Interactive browser sessions require the planned Guacamole worker; until it is configured, **Connect** reports that the gateway is unavailable instead of attempting an insecure direct browser connection.
 
 ## Development
 

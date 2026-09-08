@@ -54,6 +54,7 @@ body {
 .login-card .brand h1 { text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
 .login-card .mark, .large-mark { border-radius: 2px; color: var(--warning); border-color: #e8ff4866; background: #e8ff480c; box-shadow: inset 0 0 14px #e8ff4812, 3px 3px 0 #ff3ea525; }
 .browser-icon { background: linear-gradient(145deg, #142f4b, #080e20); color: #70e5ff; text-shadow: 0 0 9px #27cfff; }
+.rdp-icon { background: linear-gradient(145deg, #43164f, #10182e); color: #ef83ff; text-shadow: 0 0 9px #dd45ff; }
 .login-card label { text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
 .login-card .hint { border-left: 2px solid var(--magenta); padding-left: 10px; }
 

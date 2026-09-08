@@ -9,6 +9,14 @@ test('local secrets and diagnostic data are ignored', async () => {
   for (const entry of ['.diagnostic-data/', 'secrets/', '.env', '.env.docker', '*.ovpn', '*.key', '*.pem', '*.p12', '*.pfx']) assert.ok(ignore.split(/\r?\n/).includes(entry), `${entry} must be ignored`);
 });
 
+test('VPN profiles and encrypted runtime data cannot be committed by default', async () => {
+  const ignore = await read('.gitignore'); const compose = await read('compose.yaml');
+  assert.ok(ignore.split(/\r?\n/).includes('*.ovpn'));
+  assert.ok(ignore.split(/\r?\n/).includes('data/'));
+  assert.match(compose, /hedgeweb-data:\/data/);
+  assert.doesNotMatch(compose, /\.ovpn:/);
+});
+
 test('VPN agent drops capabilities except NET_ADMIN', async () => {
   for (const file of ['compose.yaml', 'compose.local.yaml']) {
     const compose = await read(file);

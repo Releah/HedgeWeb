@@ -8,8 +8,9 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 type User = { id: string; username: string; salt: string; passwordHash: string; admin: boolean; createdAt: string };
 type Profile = { id: string; name: string; host: string; port: number; username: string; folder: string; shell?: 'default' | 'nu'; hostKeySha256?: string; createdAt: string; updatedAt: string };
+type RdpProfile = { id: string; name: string; host: string; port: number; username: string; domain: string; security: 'any' | 'nla' | 'tls'; createdAt: string; updatedAt: string };
 type VpnConfig = { endpointLabel: string; accessScope: string; leaseMinutes: number; encryptedProfile: string; updatedAt: string };
-type Store = { users: User[]; profiles: Profile[]; vpn?: VpnConfig };
+type Store = { users: User[]; profiles: Profile[]; rdpProfiles: RdpProfile[]; vpn?: VpnConfig };
 type Identity = { id: string; username: string; email?: string; groups: string[]; admin: boolean; source: 'local' | 'authentik' };
 type LoginSession = { identity: Identity; expiresAt: number };
 
@@ -31,9 +32,9 @@ const vpnConfigKey = loadVpnConfigKey();
 bootstrapAdmin();
 
 function loadStore(): Store {
-  if (!existsSync(storePath)) return { users: [], profiles: [] };
+  if (!existsSync(storePath)) return { users: [], profiles: [], rdpProfiles: [] };
   const parsed = JSON.parse(readFileSync(storePath, 'utf8')) as Partial<Store>;
-  return { users: Array.isArray(parsed.users) ? parsed.users : [], profiles: Array.isArray(parsed.profiles) ? parsed.profiles : [], vpn: parsed.vpn };
+  return { users: Array.isArray(parsed.users) ? parsed.users : [], profiles: Array.isArray(parsed.profiles) ? parsed.profiles : [], rdpProfiles: Array.isArray(parsed.rdpProfiles) ? parsed.rdpProfiles : [], vpn: parsed.vpn };
 }
 
 function loadVpnConfigKey() {
@@ -147,6 +148,14 @@ function validProfile(input: Record<string, unknown>, current?: Profile): Profil
   return { id: current?.id || randomUUID(), name, host, port: requestedPort, username, folder, shell, hostKeySha256: current?.hostKeySha256, createdAt: current?.createdAt || now, updatedAt: now };
 }
 
+function validRdpProfile(input: Record<string, unknown>, current?: RdpProfile): RdpProfile {
+  const name = String(input.name || '').trim(); const host = String(input.host || '').trim(); const username = String(input.username || '').trim(); const domain = String(input.domain || '').trim(); const requestedPort = Number(input.port || 3389);
+  if (!name || name.length > 120 || !host || host.length > 255 || username.length > 128 || domain.length > 128 || !Number.isInteger(requestedPort) || requestedPort < 1 || requestedPort > 65535) throw new Error('Invalid RDP connection profile');
+  if (/\s|[/?#@]/.test(host)) throw new Error('Host must be a hostname or IP address');
+  const security = input.security === 'nla' || input.security === 'tls' ? input.security : 'any'; const now = new Date().toISOString();
+  return { id: current?.id || randomUUID(), name, host, port: requestedPort, username, domain, security, createdAt: current?.createdAt || now, updatedAt: now };
+}
+
 async function api(req: IncomingMessage, res: ServerResponse, pathname: string) {
   if (!sameOrigin(req) && req.method !== 'GET') return json(res, 403, { error: 'Origin rejected' });
   if (pathname === '/api/auth/status' && req.method === 'GET') return json(res, 200, { identity: identity(req), authMode });
@@ -197,10 +206,12 @@ async function api(req: IncomingMessage, res: ServerResponse, pathname: string) 
     const current = await vpnAgent<{ identity?: string }>('/status'); if (current.identity && current.identity !== actor.username && !actor.admin) return json(res, 403, { error: 'This VPN session belongs to another user' }); return json(res, 200, await vpnAgent('/disconnect', { method: 'POST' }));
   }
   if (pathname === '/api/profiles' && req.method === 'GET') return json(res, 200, store.profiles);
+  if (pathname === '/api/rdp/profiles' && req.method === 'GET') return json(res, 200, store.rdpProfiles);
   if (req.method !== 'GET' && !actor.admin) return json(res, 403, { error: 'Administrator access required' });
   if (pathname === '/api/profiles' && req.method === 'POST') {
     const profile = validProfile(await body(req)); store.profiles.push(profile); saveStore(); return json(res, 201, profile);
   }
+  if (pathname === '/api/rdp/profiles' && req.method === 'POST') { const profile = validRdpProfile(await body(req)); store.rdpProfiles.push(profile); saveStore(); return json(res, 201, profile); }
   const match = pathname.match(/^\/api\/profiles\/([0-9a-f-]+)$/);
   if (match && req.method === 'PUT') {
     const index = store.profiles.findIndex(item => item.id === match[1]); if (index < 0) return json(res, 404, { error: 'Profile not found' });

@@ -41,13 +41,14 @@ async function disconnect() {
 async function connect(input) {
   if (processHandle) await disconnect();
   const profile = validateProfile(input.profile);
-  const username = String(input.username || '').trim(); const password = String(input.password || ''); const otp = String(input.otp || '').trim();
-  if (!username || !password) throw new Error('VPN username and password are required');
+  const username = String(input.username || '').trim(); const password = String(input.password || ''); const otp = String(input.otp || '').trim(); const certificateOnly = input.certificateOnly === true;
+  if (!certificateOnly && (!username || !password)) throw new Error('VPN username and password are required');
   if (/[\r\n]/.test(username + password + otp)) throw new Error('Credentials contain invalid characters');
   const packedPassword = otp ? `SCRV1:${Buffer.from(password).toString('base64')}:${Buffer.from(otp).toString('base64')}` : password;
-  await writeFile('/run/vpn/client.ovpn', profile, { mode: 0o600 }); await writeFile('/run/vpn/auth', `${username}\n${packedPassword}\n`, { mode: 0o600 });
+  await writeFile('/run/vpn/client.ovpn', profile, { mode: 0o600 }); if (!certificateOnly) await writeFile('/run/vpn/auth', `${username}\n${packedPassword}\n`, { mode: 0o600 });
   state = 'connecting'; errorMessage = null; identity = String(input.identity || username); endpoint = String(input.endpoint || 'OpenVPN'); accessScope = String(input.accessScope || 'Elevated routes'); expiresAt = new Date(Date.now() + Math.min(Math.max(Number(input.leaseMinutes) || 60, 5), 480) * 60_000).toISOString(); logTail = [];
-  const child = spawn('openvpn', ['--config', '/run/vpn/client.ovpn', '--auth-user-pass', '/run/vpn/auth', '--dev', 'tun0', '--verb', '3'], { stdio: ['ignore', 'pipe', 'pipe'] }); processHandle = child;
+  const args = ['--config', '/run/vpn/client.ovpn', '--dev', 'tun0', '--verb', '3']; if (!certificateOnly) args.push('--auth-user-pass', '/run/vpn/auth');
+  const child = spawn('openvpn', args, { stdio: ['ignore', 'pipe', 'pipe'] }); processHandle = child;
   const consume = data => {
     for (const line of data.toString().split(/\r?\n/).filter(Boolean)) {
       const safe = line.replace(/(password|token|auth)[^ ]*/ig, '[redacted]'); logTail.push(safe.slice(-240)); if (logTail.length > 8) logTail.shift();

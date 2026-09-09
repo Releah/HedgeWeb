@@ -35,9 +35,7 @@ services:
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
       TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS}
       AUTHENTIK_ADMIN_GROUP: ${AUTHENTIK_ADMIN_GROUP:-HedgeWeb Admins}
-      VPN_CONFIG_KEY_FILE: /run/secrets/vpn_config_key
-    secrets:
-      - vpn_config_key
+      VPN_CONFIG_KEY: ${VPN_CONFIG_KEY:?Set VPN_CONFIG_KEY to a base64-encoded 32-byte random value}
     volumes:
       - hedgeweb-data:/data
     security_opt:
@@ -90,10 +88,6 @@ services:
 
 volumes:
   hedgeweb-data:
-
-secrets:
-  vpn_config_key:
-    file: ./secrets/vpn_config_key
 
 networks:
   proxy:

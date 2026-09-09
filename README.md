@@ -46,15 +46,15 @@ After the administrator has been created, remove `BOOTSTRAP_ADMIN_PASSWORD` from
    docker network create proxy
    ```
 
-2. Generate a 32-byte VPN configuration key and save its base64 representation to `secrets/vpn_config_key`:
+2. Generate a 32-byte VPN configuration key:
 
    ```sh
-   mkdir -p secrets
-   openssl rand -base64 32 > secrets/vpn_config_key
-   chmod 600 secrets/vpn_config_key
+   openssl rand -base64 32
    ```
 
-3. Set `PUBLIC_ORIGIN`, `TRUSTED_PROXY_IPS`, authentication mode, and bootstrap values in a local `.env` file. Never commit `.env`, `.env.docker`, `secrets/`, VPN profiles, certificates, or the data volume.
+   Set the resulting value as the `VPN_CONFIG_KEY` secret/environment variable in Portainer or your stack manager. Keep the same value across container recreations or saved VPN profiles will no longer decrypt. Do not put the generated value in Git.
+
+3. Set `PUBLIC_ORIGIN`, `TRUSTED_PROXY_IPS`, authentication mode, and bootstrap values in your stack environment. Never commit `.env`, `.env.docker`, `secrets/`, VPN profiles, certificates, or the data volume.
 
 4. Start the production stack:
 

@@ -28,11 +28,11 @@ test('VPN agent drops capabilities except NET_ADMIN', async () => {
   }
 });
 
-test('production VPN key is provided through a Docker secret', async () => {
+test('production VPN key is required from the deployment environment', async () => {
   const compose = await read('compose.yaml');
   const server = await read('src/server.ts');
-  assert.match(compose, /VPN_CONFIG_KEY_FILE:\s*\/run\/secrets\/vpn_config_key/);
-  assert.match(compose, /file:\s*\.\/secrets\/vpn_config_key/);
+  assert.match(compose, /VPN_CONFIG_KEY:\s*\$\{VPN_CONFIG_KEY:\?/);
+  assert.doesNotMatch(compose, /VPN_CONFIG_KEY_FILE|file:\s*\.\/secrets\/vpn_config_key/);
   assert.match(server, /process\.env\.VPN_CONFIG_KEY_FILE/);
 });
 

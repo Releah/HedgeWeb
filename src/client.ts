@@ -27,6 +27,21 @@ function updateClock() { qs('#clock').textContent = new Intl.DateTimeFormat(unde
 function formatBytes(value: number) { if (value < 1024) return `${value} B`; if (value < 1024 ** 2) return `${(value / 1024).toFixed(1)} KB`; if (value < 1024 ** 3) return `${(value / 1024 ** 2).toFixed(1)} MB`; return `${(value / 1024 ** 3).toFixed(1)} GB`; }
 function formatDuration(milliseconds: number) { const total = Math.max(0, Math.floor(milliseconds / 1000)); const hours = Math.floor(total / 3600); const minutes = Math.floor(total % 3600 / 60); const seconds = total % 60; return [hours, minutes, seconds].map(value => String(value).padStart(2, '0')).join(':'); }
 let vpnStatus: VpnStatus | null = null;
+const vpnRxHistory = Array<number>(40).fill(0), vpnTxHistory = Array<number>(40).fill(0);
+let previousVpnSample: { received: number; sent: number; at: number } | null = null;
+function renderVpnGraph() {
+  const width = 320, height = 44, max = Math.max(1024, ...vpnRxHistory, ...vpnTxHistory);
+  const points = (values: number[]) => values.map((value, index) => `${(index / (values.length - 1)) * width},${height - (value / max) * (height - 3)}`).join(' ');
+  const rx = points(vpnRxHistory), tx = points(vpnTxHistory);
+  qs('.vpn-rx-line').setAttribute('points', rx); qs('.vpn-tx-line').setAttribute('points', tx);
+  qs('.vpn-rx-fill').setAttribute('d', `M 0 ${height} L ${rx.replaceAll(' ', ' L ')} L ${width} ${height} Z`);
+  qs('#vpn-rx-rate').textContent = `${formatBytes(vpnRxHistory.at(-1) || 0)}/s`; qs('#vpn-tx-rate').textContent = `${formatBytes(vpnTxHistory.at(-1) || 0)}/s`;
+}
+function sampleVpnThroughput(status: VpnStatus) {
+  const now = Date.now(), active = status.state === 'connected'; let received = 0, sent = 0;
+  if (active && previousVpnSample) { const seconds = Math.max(.25, (now - previousVpnSample.at) / 1000); received = Math.max(0, status.bytesReceived - previousVpnSample.received) / seconds; sent = Math.max(0, status.bytesSent - previousVpnSample.sent) / seconds; }
+  vpnRxHistory.push(received); vpnRxHistory.shift(); vpnTxHistory.push(sent); vpnTxHistory.shift(); previousVpnSample = active ? { received: status.bytesReceived, sent: status.bytesSent, at: now } : null; renderVpnGraph();
+}
 function renderVpnStatus() {
   if (!vpnStatus) return;
   const connected = vpnStatus.state === 'connected', label = vpnStatus.state === 'not_configured' ? 'OFFLINE' : vpnStatus.state.toUpperCase().replace('_', ' ');
@@ -37,6 +52,7 @@ function renderVpnStatus() {
   qs('#vpn-duration').textContent = vpnStatus.connectedAt ? formatDuration(Date.now() - Date.parse(vpnStatus.connectedAt)) : '00:00:00';
   qs('#vpn-lease').textContent = vpnStatus.expiresAt ? formatDuration(Date.parse(vpnStatus.expiresAt) - Date.now()) : '—'; qs('#vpn-received').textContent = formatBytes(vpnStatus.bytesReceived); qs('#vpn-sent').textContent = formatBytes(vpnStatus.bytesSent);
   qs('#vpn-error-row').hidden = !vpnStatus.error; qs('#vpn-error-detail').textContent = vpnStatus.error || '—';
+  sampleVpnThroughput(vpnStatus);
   const action = qs<HTMLButtonElement>('#vpn-action'); action.disabled = busy; action.classList.toggle('disconnect', connected);
   action.textContent = !vpnStatus.configured ? 'CONFIGURE VPN' : connected ? 'DISCONNECT' : busy ? 'AUTHENTICATING…' : 'REQUEST INTERNAL ACCESS';
 }
@@ -120,16 +136,9 @@ function setupSettings(win: ManagedWindow) {
 function openVpnSettings() { openApp('settings'); const win = windows.get('app:settings'); if (win) selectSettingsPage(win, 'vpn'); }
 
 function setupBrowser(win: ManagedWindow) {
-  const form = qs<HTMLFormElement>('.browser-toolbar', win.element), address = qs<HTMLInputElement>('.browser-address', win.element), frame = qs<HTMLIFrameElement>('.browser-frame', win.element);
-  const back = qs<HTMLButtonElement>('[data-browser-back]', win.element), forward = qs<HTMLButtonElement>('[data-browser-forward]', win.element), reload = qs<HTMLButtonElement>('[data-browser-reload]', win.element), external = qs<HTMLButtonElement>('[data-browser-external]', win.element);
-  const history = ['https://example.com/']; let position = 0;
-  const normalizeAddress = (value: string) => { const candidate = /^[a-z][a-z0-9+.-]*:/i.test(value.trim()) ? value.trim() : `https://${value.trim()}`; const url = new URL(candidate); if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Only HTTP and HTTPS addresses are supported'); if (url.origin === location.origin) throw new Error('HedgeWeb cannot embed itself'); return url.href; };
-  const render = () => { const url = history[position]!; address.value = url; back.disabled = position === 0; forward.disabled = position === history.length - 1; };
-  const navigate = (value: string) => { try { const url = normalizeAddress(value); history.splice(position + 1); history.push(url); position = history.length - 1; render(); frame.src = url; } catch (error) { address.setCustomValidity((error as Error).message); address.reportValidity(); } };
-  address.oninput = () => address.setCustomValidity(''); form.onsubmit = event => { event.preventDefault(); navigate(address.value); };
-  back.onclick = () => { if (position > 0) { position--; render(); } }; forward.onclick = () => { if (position < history.length - 1) { position++; render(); } };
-  reload.onclick = () => { const current = frame.src; frame.src = 'about:blank'; requestAnimationFrame(() => frame.src = current); };
-  external.onclick = () => { try { frame.src = normalizeAddress(address.value); } catch (error) { address.setCustomValidity((error as Error).message); address.reportValidity(); } }; frame.src = history[0]!; render();
+  const app = qs<HTMLElement>('.browser-app', win.element), frame = qs<HTMLIFrameElement>('.browser-frame', win.element);
+  qs<HTMLButtonElement>('[data-browser-reload]', win.element).onclick = () => { frame.src = 'about:blank'; requestAnimationFrame(() => frame.src = '/browser-worker/'); };
+  qs<HTMLButtonElement>('[data-browser-fullscreen]', win.element).onclick = () => { if (document.fullscreenElement) void document.exitFullscreen(); else void app.requestFullscreen(); };
 }
 async function loadProfiles() { profiles = await request<Profile[]>('/api/profiles'); renderProfiles(); }
 function renderProfiles() { const win = windows.get('app:ssh'); if (!win) return; const list = qs('.profile-list', win.element); list.innerHTML = profiles.length ? profiles.map(profile => `<article class="profile-card"><span class="device-status"></span><div><strong>${escapeHtml(profile.name)}</strong><small>${escapeHtml(profile.username)}@${escapeHtml(profile.host)}:${profile.port}</small><em>${profile.shell === 'nu' ? 'Nushell' : 'Default shell'}${profile.folder ? ` · ${escapeHtml(profile.folder)}` : ''}</em></div><button class="connect-button" data-profile-id="${profile.id}">Connect</button></article>`).join('') : '<div class="empty-state"><span class="app-icon terminal-icon">›_</span><h3>No connections yet</h3><p>Add an SSH connection to open your first terminal.</p></div>'; list.querySelectorAll<HTMLButtonElement>('[data-profile-id]').forEach(button => button.onclick = () => openConnection(button.dataset.profileId!)); }

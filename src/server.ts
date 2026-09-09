@@ -1,4 +1,4 @@
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { createServer, request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http';
 import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
@@ -241,14 +241,43 @@ function staticFile(req: IncomingMessage, res: ServerResponse, pathname: string)
   securityHeaders(res); res.setHeader('Content-Type', types[extname(target)] || 'application/octet-stream'); res.setHeader('Cache-Control', 'no-cache'); res.end(readFileSync(target));
 }
 
+const browserWorker = { host: '127.0.0.1', port: Number(process.env.BROWSER_WORKER_PORT || 3000) };
+const browserHopHeaders = new Set(['connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailer', 'transfer-encoding', 'upgrade']);
+function browserHeaders(headers: IncomingMessage['headers']) {
+  return Object.fromEntries(Object.entries(headers).filter(([name]) => !browserHopHeaders.has(name.toLowerCase()) && !['host', 'authorization', 'cookie'].includes(name.toLowerCase())));
+}
+function browserUpgradeHeaders(headers: IncomingMessage['headers']) {
+  return Object.fromEntries(Object.entries(headers).filter(([name, value]) => value !== undefined && !['host', 'authorization', 'cookie'].includes(name.toLowerCase())));
+}
+function proxyBrowser(req: IncomingMessage, res: ServerResponse) {
+  if (!identity(req)) return json(res, 401, { error: 'Authentication required' });
+  const upstream = httpRequest({ hostname: browserWorker.host, port: browserWorker.port, method: req.method, path: req.url, headers: { ...browserHeaders(req.headers), host: `${browserWorker.host}:${browserWorker.port}` } }, response => {
+    res.statusCode = response.statusCode || 502;
+    for (const [name, value] of Object.entries(response.headers)) if (value !== undefined && !browserHopHeaders.has(name.toLowerCase()) && !['content-security-policy', 'x-frame-options'].includes(name.toLowerCase())) res.setHeader(name, value);
+    res.setHeader('Cache-Control', 'no-store'); response.pipe(res);
+  });
+  upstream.on('error', () => { if (!res.headersSent) { res.statusCode = 503; res.setHeader('Content-Type', 'text/plain; charset=utf-8'); } res.end('Secure browser worker is starting. Retry in a moment.'); });
+  req.pipe(upstream);
+}
+
 const server = createServer(async (req, res) => {
-  try { const pathname = new URL(req.url || '/', publicOrigin).pathname; if (pathname.startsWith('/api/')) await api(req, res, pathname); else staticFile(req, res, pathname); }
+  try { const pathname = new URL(req.url || '/', publicOrigin).pathname; if (pathname.startsWith('/api/')) await api(req, res, pathname); else if (pathname.startsWith('/browser-worker/')) proxyBrowser(req, res); else staticFile(req, res, pathname); }
   catch (error) { console.error(error); json(res, 400, { error: error instanceof Error ? error.message : 'Bad request' }); }
 });
 
 const sockets = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024 });
 server.on('upgrade', (req, socket, head) => {
   const pathname = new URL(req.url || '/', publicOrigin).pathname;
+  if (pathname.startsWith('/browser-worker/')) {
+    if (!identity(req) || !sameOrigin(req)) return socket.destroy();
+    const upstream = httpRequest({ hostname: browserWorker.host, port: browserWorker.port, method: 'GET', path: req.url, headers: { ...browserUpgradeHeaders(req.headers), host: `${browserWorker.host}:${browserWorker.port}` } });
+    upstream.on('upgrade', (response, workerSocket, workerHead) => {
+      const headers = Object.entries(response.headers).flatMap(([name, value]) => value === undefined ? [] : (Array.isArray(value) ? value : [value]).map(item => `${name}: ${item}`));
+      socket.write(`HTTP/1.1 ${response.statusCode || 101} Switching Protocols\r\n${headers.join('\r\n')}\r\n\r\n`);
+      if (head.length) workerSocket.write(head); if (workerHead.length) socket.write(workerHead); workerSocket.pipe(socket).pipe(workerSocket);
+    });
+    upstream.on('error', () => socket.destroy()); upstream.end(); return;
+  }
   if (pathname !== '/ws/ssh' || !identity(req) || !sameOrigin(req)) return socket.destroy();
   sockets.handleUpgrade(req, socket, head, ws => sockets.emit('connection', ws, req));
 });

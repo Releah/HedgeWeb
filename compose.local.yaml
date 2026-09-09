@@ -36,6 +36,44 @@ services:
     mem_limit: 512m
     tmpfs:
       - /tmp:size=16m,noexec,nosuid,nodev
+  browser:
+    image: ghcr.io/linuxserver/chromium:version-b0ddd401@sha256:47fc8bb18cdb0844199a16e1e14b3b38ba97f6ad1659895c243ba5f2384aad1e
+    restart: unless-stopped
+    network_mode: "service:vpn-agent"
+    depends_on:
+      - vpn-agent
+    environment:
+      SUBFOLDER: /browser-worker/
+      TITLE: HedgeWeb Secure Browser
+      NO_DECOR: "true"
+      START_DOCKER: "false"
+      DISABLE_DRI: "true"
+      SELKIES_MICROPHONE_ENABLED: "false"
+      SELKIES_GAMEPAD_ENABLED: "false"
+      SELKIES_COMMAND_ENABLED: "false"
+      SELKIES_FILE_TRANSFERS: none
+      SELKIES_ENABLE_SHARING: "false"
+      SELKIES_UI_SIDEBAR_SHOW_FILES: "false"
+      SELKIES_UI_SIDEBAR_SHOW_APPS: "false"
+      SELKIES_UI_SIDEBAR_SHOW_SHARING: "false"
+      SELKIES_UI_SIDEBAR_SHOW_GAMEPADS: "false"
+      TZ: Europe/London
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 512
+    mem_limit: 1536m
+    shm_size: 1gb
+    tmpfs:
+      - /config:size=512m,nosuid,nodev,uid=0,gid=911,mode=0770
+      - /tmp:size=256m,nosuid,nodev
 
 volumes:
   hedgeweb-data:

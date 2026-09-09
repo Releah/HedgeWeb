@@ -133,15 +133,14 @@ dialog { border-color: #52ffd166; background: #061118fa; box-shadow: 9px 9px 0 #
 .terminal-host .xterm-viewport::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover) !important; }
 .terminal-host .xterm-viewport::-webkit-scrollbar-thumb:active { background: var(--scroll-thumb-active) !important; }
 
-.browser-app { height: 100%; min-height: 0; display: grid; grid-template-rows: 48px 24px 1fr; background: #02070d; }
-.browser-toolbar { margin: 0; padding: 7px 9px; display: grid; grid-template-columns: 32px 32px 32px minmax(100px, 1fr) 44px 34px; gap: 6px; align-items: center; border-bottom: 1px solid #52ffd12f; background: linear-gradient(90deg, #071b21, #07101a 70%, #170b18); }
+.browser-app { height: 100%; min-height: 0; display: grid; grid-template-rows: 42px 1fr; background: #02070d; }
+.browser-app:fullscreen { width: 100vw; height: 100vh; background: #02070d; }
+.browser-toolbar { margin: 0; padding: 5px 9px; display: flex; justify-content: space-between; gap: 8px; align-items: center; border-bottom: 1px solid #52ffd12f; background: linear-gradient(90deg, #071b21, #07101a 70%, #170b18); color: #6fa19e; font-size: 8px; letter-spacing: .1em; }
+.browser-toolbar > span { display: flex; align-items: center; gap: 8px; }.browser-toolbar > span i { width: 6px; height: 6px; border-radius: 50%; background: #52ffd1; box-shadow: 0 0 8px #52ffd1; }.browser-toolbar > div { display: flex; gap: 6px; }
 .browser-toolbar button { height: 32px; padding: 0; border: 1px solid #52ffd13b; border-radius: 1px; background: #52ffd108; color: var(--accent); font: inherit; }
 .browser-toolbar button:hover:not(:disabled) { border-color: var(--accent); color: var(--warning); box-shadow: inset 0 0 12px #52ffd115; }
 .browser-toolbar button:disabled { opacity: .28; cursor: default; }
-.browser-toolbar .browser-address { height: 32px; padding: 5px 10px; font-size: 12px; }
-.browser-toolbar .browser-go { color: #04110e; background: var(--accent); font-size: 10px; font-weight: 800; }
-.browser-notice { padding: 5px 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #ff77ba; border-bottom: 1px solid #ff3ea520; background: #ff3ea508; font-size: 8px; letter-spacing: .08em; }
-.browser-frame { width: 100%; height: 100%; min-height: 0; border: 0; background: #fff; }
+.browser-frame { width: 100%; height: 100%; min-height: 0; border: 0; background: #071018; }
 
 /* VPN access monitor */
 .system-tray { margin-left: auto; height: 100%; display: flex; align-items: center; }
@@ -163,8 +162,9 @@ dialog { border-color: #52ffd166; background: #061118fa; box-shadow: 9px 9px 0 #
 .vpn-monitor header strong { color: #62f5d2; font-size: 11px; letter-spacing: .12em; }.vpn-monitor header small { color: #607b82; font-size: 7px; letter-spacing: .12em; }
 .vpn-monitor-icon { display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid #52ffd15c; color: #e8ff48; font-size: 21px; box-shadow: inset 0 0 12px #52ffd117; }
 .vpn-state-badge { margin-left: auto; padding: 5px 7px; border: 1px solid #ff3e8a55; color: #ff77ba; font-size: 7px; letter-spacing: .12em; }.vpn-state-badge.state-connected { border-color: #52ffd166; color: #52ffd1; }
-.vpn-monitor-graph { height: 50px; padding: 8px 14px 5px; display: flex; align-items: end; gap: 5px; border-bottom: 1px solid #963dcc1d; background: repeating-linear-gradient(0deg, transparent 0 9px, #52ffd10d 10px); }
-.vpn-monitor-graph span { flex: 1; height: 8%; border-top: 1px solid #963dcc; background: linear-gradient(#963dcc45, transparent); }.vpn-monitor-graph span:nth-child(3n) { height: 13%; }.vpn-monitor-graph span:nth-child(4n) { height: 5%; }
+.vpn-monitor-graph { position: relative; height: 66px; padding: 6px 14px 14px; border-bottom: 1px solid #963dcc1d; background: repeating-linear-gradient(0deg, transparent 0 10px, #52ffd10d 11px); }
+.vpn-monitor-graph svg { display: block; width: 100%; height: 44px; overflow: visible; }.vpn-graph-line { fill: none; vector-effect: non-scaling-stroke; stroke-width: 1.3; stroke-linejoin: round; }.vpn-rx-line { stroke: #52ffd1; filter: drop-shadow(0 0 2px #52ffd1); }.vpn-tx-line { stroke: #dd45ff; filter: drop-shadow(0 0 2px #dd45ff); }.vpn-graph-fill { fill: url('#none'); }.vpn-rx-fill { fill: #52ffd10d; }
+.vpn-graph-legend { position: absolute; right: 14px; bottom: 4px; display: flex; gap: 12px; color: #607b82; font-size: 7px; }.vpn-graph-legend span:first-child strong { color: #52ffd1; }.vpn-graph-legend span:last-child strong { color: #dd45ff; }
 .vpn-monitor dl { margin: 0; padding: 8px 14px; }.vpn-monitor dl div { min-height: 30px; display: grid; grid-template-columns: 118px 1fr; align-items: center; border-bottom: 1px solid #52ffd10e; }
 .vpn-monitor dt { color: #658086; font-size: 8px; letter-spacing: .08em; text-transform: uppercase; }.vpn-monitor dd { margin: 0; overflow-wrap: anywhere; color: #c9dedc; font-size: 10px; text-align: right; }
 .vpn-monitor #vpn-error-row { padding: 6px 0; }.vpn-monitor #vpn-error-detail { color: #ff77ba; font-size: 8px; line-height: 1.35; }

@@ -41,3 +41,24 @@ test('dangerous OpenVPN directives remain blocked', async () => {
   for (const directive of ['plugin', 'management', 'script-security', 'tls-verify', 'pkcs11-providers']) assert.ok(agent.includes(directive), `${directive} must remain blocked`);
   assert.match(agent, /pull-filter ignore redirect-gateway/);
 });
+
+test('isolated browser is pinned, unexposed and capability constrained', async () => {
+  for (const file of ['compose.yaml', 'compose.local.yaml']) {
+    const compose = await read(file); const browser = compose.split(/^  browser:/m)[1];
+    assert.ok(browser, `${file} must define the browser worker`);
+    assert.match(browser, /chromium:[^\s]+@sha256:[a-f0-9]{64}/);
+    assert.match(browser, /network_mode:\s*"service:vpn-agent"/);
+    assert.match(browser, /cap_drop:\s*\n\s*- ALL/);
+    assert.match(browser, /no-new-privileges:true/);
+    assert.match(browser, /SELKIES_ENABLE_SHARING:\s*"false"/);
+    assert.match(browser, /SELKIES_FILE_TRANSFERS:\s*none/);
+    assert.doesNotMatch(browser, /privileged:\s*true|docker\.sock|\n\s+ports:/);
+  }
+});
+
+test('browser WebSocket proxy strips session headers without undefined values', async () => {
+  const server = await read('src/server.ts');
+  assert.match(server, /function browserUpgradeHeaders/);
+  assert.match(server, /value !== undefined/);
+  assert.doesNotMatch(server, /cookie:\s*undefined|authorization:\s*undefined/);
+});

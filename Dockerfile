@@ -1,4 +1,4 @@
-FROM node:24-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf AS build
+FROM node:25-alpine@sha256:bdf2cca6fe3dabd014ea60163eca3f0f7015fbd5c7ee1b0e9ccb4ced6eb02ef4 AS build
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 RUN corepack enable && pnpm install --no-frozen-lockfile
@@ -8,7 +8,7 @@ COPY src ./src
 COPY public ./public
 RUN pnpm build && pnpm prune --prod
 
-FROM node:24-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
+FROM node:25-alpine@sha256:bdf2cca6fe3dabd014ea60163eca3f0f7015fbd5c7ee1b0e9ccb4ced6eb02ef4
 RUN addgroup -S hedgeweb && adduser -S -G hedgeweb hedgeweb
 WORKDIR /app
 COPY --from=build --chown=hedgeweb:hedgeweb /app/dist ./dist
